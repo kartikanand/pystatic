@@ -7,7 +7,7 @@ import frontmatter
 from markdown2 import markdown
 
 env = jinja2.Environment(
-    loader=jinja2.FileSystemLoader('layouts/')
+    loader=jinja2.FileSystemLoader(['layouts/', 'partials/', 'pages/'])
 )
 
 def md_to_html(md):
@@ -24,8 +24,8 @@ def md_to_html(md):
 
 
 def html_to_html(html):
-    template = env.get_template(layout)
-    return template.render(content=md_html)
+    template = env.get_template(html)
+    return template.render()
 
 
 def create_site_dir():
@@ -36,7 +36,6 @@ def create_site_dir():
 
 def write_to_site(filename, contents):
     site_dir = 'site'
-
     with open(os.path.join(site_dir, filename), 'w') as f:
         f.write(contents)
 
@@ -54,9 +53,23 @@ def create_posts():
 
 
 def create_pages():
+    page_dir = './pages'
+    page_files = os.listdir(page_dir)
+
+    for page in page_files:
+        pagename, ext = os.path.splitext(page)
+
+        if ext == '.html':
+            write_to_site(page, html_to_html(page))
+        else:
+            with open(os.path.join(page_dir, page)) as md:
+                page_html = md_to_html(md)
+
+                write_to_site(pagename + '.html', page_html)
 
 
 if __name__ == '__main__':
     create_site_dir()
     create_posts()
+    create_pages()
 
